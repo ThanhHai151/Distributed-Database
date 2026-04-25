@@ -88,6 +88,22 @@ chmod +x start.sh start-web.sh stop.sh
 
 👉 Truy cập ngay vào: **`http://localhost:3000`** để sử dụng phần mềm.
 
+### 🪟 Dành riêng cho Windows (Windows Users)
+
+Nếu máy tính của bạn chạy Windows, các lệnh tĩnh `.sh` sẽ không thể thực thi trực tiếp trên `cmd` hoặc `PowerShell` mặc định. Thay vào đó, bạn có thể thực hiện theo 1 trong 2 cách sau:
+
+**Cách 1: Sử dụng Git Bash (Khuyên dùng - Nhanh nhất)**
+1. Cài đặt [Git for Windows](https://gitforwindows.org/) (Nếu máy bạn chưa có).
+2. Click chuột phải vào thư mục gốc của dự án này, chọn **"Open Git Bash here"**.
+3. Cửa sổ Terminal đen hiện ra, bạn dán y hệt các lệnh bên trên vào để chạy:
+   ```bash
+   ./start.sh
+   ./start-web.sh
+   ```
+
+**Cách 2: Thông qua WSL (Windows Subsystem for Linux)**
+Nếu bạn đang dùng Docker Desktop thông qua kiến trúc WSL 2, bạn hoàn toàn có thể mở terminal WSL (ví dụ: Ubuntu), dùng lệnh `cd` để trỏ tới thư mục dự án và chạy các tập lệnh `.sh` như một môi trường Linux thực thụ.
+
 ---
 
 ## 📂 Kiến Trúc Mã Nguồn Thư Mục
