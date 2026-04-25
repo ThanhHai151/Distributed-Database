@@ -1,0 +1,46 @@
+{
+  "master": {
+    "id": "master",
+    "name": "Server Gốc (Master)",
+    "branch": "ALL",
+    "city": "Tất cả chi nhánh",
+    "host": "localhost",
+    "port": 1432,
+    "user": "sa",
+    "password": "KetNoi@123",
+    "database": "QuanLyNhanSu"
+  },
+  "cn1": {
+    "id": "cn1",
+    "name": "Chi nhánh Hà Nội",
+    "branch": "CN1",
+    "city": "Hà Nội",
+    "host": "localhost",
+    "port": 1437,
+    "user": "sa",
+    "password": "KetNoi@123",
+    "database": "QuanLyNhanSu"
+  },
+  "cn2": {
+    "id": "cn2",
+    "name": "Chi nhánh Đà Nẵng",
+    "branch": "CN2",
+    "city": "Đà Nẵng",
+    "host": "localhost",
+    "port": 1435,
+    "user": "sa",
+    "password": "KetNoi@123",
+    "database": "QuanLyNhanSu"
+  },
+  "cn3": {
+    "id": "cn3",
+    "name": "Chi nhánh TP.HCM",
+    "branch": "CN3",
+    "city": "TP. Hồ Chí Minh",
+    "host": "localhost",
+    "port": 1436,
+    "user": "sa",
+    "password": "KetNoi@123",
+    "database": "QuanLyNhanSu"
+  }
+}

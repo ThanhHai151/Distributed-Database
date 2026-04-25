@@ -1,0 +1,158 @@
+version: '3.8'
+
+# ============================================================
+#  CSDL PHÂN TÁN - QuanLyNhanSu
+#  1 Server Gốc (Master) + 3 Server Chi Nhánh (CLIENT1/2/3)
+# ============================================================
+
+services:
+
+  # ─────────────────────────────────────────────
+  #  SERVER GỐC — chứa toàn bộ dữ liệu
+  # ─────────────────────────────────────────────
+  sqlserver-master:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: qlns_master
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "KetNoi@123"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1432:1433"
+    volumes:
+      - master_data:/var/opt/mssql
+      - ./init-scripts:/init-scripts
+    networks:
+      qlns_net:
+        ipv4_address: 192.168.99.10
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "KetNoi@123", "-Q", "SELECT 1", "-C"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  #  CLIENT 1 — Chi nhánh Hà Nội (CN1)
+  # ─────────────────────────────────────────────
+  sqlserver-cn1:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: qlns_cn1
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "KetNoi@123"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1437:1433"
+    volumes:
+      - cn1_data:/var/opt/mssql
+    networks:
+      qlns_net:
+        ipv4_address: 192.168.99.11
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "KetNoi@123", "-Q", "SELECT 1", "-C"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  #  CLIENT 2 — Chi nhánh Đà Nẵng (CN2)
+  # ─────────────────────────────────────────────
+  sqlserver-cn2:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: qlns_cn2
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "KetNoi@123"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1435:1433"
+    volumes:
+      - cn2_data:/var/opt/mssql
+    networks:
+      qlns_net:
+        ipv4_address: 192.168.99.12
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "KetNoi@123", "-Q", "SELECT 1", "-C"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  #  CLIENT 3 — Chi nhánh TP.HCM (CN3)
+  # ─────────────────────────────────────────────
+  sqlserver-cn3:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: qlns_cn3
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "KetNoi@123"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1436:1433"
+    volumes:
+      - cn3_data:/var/opt/mssql
+    networks:
+      qlns_net:
+        ipv4_address: 192.168.99.13
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "KetNoi@123", "-Q", "SELECT 1", "-C"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  #  INIT CONTAINER — chạy script khởi tạo DB
+  #  (chờ 4 server sẵn sàng rồi tự động setup)
+  # ─────────────────────────────────────────────
+  db-init:
+    image: mcr.microsoft.com/mssql-tools:latest
+    container_name: qlns_init
+    depends_on:
+      sqlserver-master:
+        condition: service_healthy
+      sqlserver-cn1:
+        condition: service_healthy
+      sqlserver-cn2:
+        condition: service_healthy
+      sqlserver-cn3:
+        condition: service_healthy
+    volumes:
+      - ./init-scripts:/init-scripts
+    networks:
+      - qlns_net
+    command: >
+      bash -c "
+        echo '=== Bat dau khoi tao CSDL phan tan ===' &&
+        echo '--- Khoi tao SERVER GOC (Master) ---' &&
+        /opt/mssql-tools/bin/sqlcmd -S 172.28.0.10 -U sa -P 'KetNoi@123' -i /init-scripts/01_master_setup.sql &&
+        echo '--- Khoi tao CLIENT1 (Chi nhanh Ha Noi - CN1) ---' &&
+        /opt/mssql-tools/bin/sqlcmd -S 172.28.0.11 -U sa -P 'KetNoi@123' -i /init-scripts/02_cn1_setup.sql &&
+        echo '--- Khoi tao CLIENT2 (Chi nhanh Da Nang - CN2) ---' &&
+        /opt/mssql-tools/bin/sqlcmd -S 172.28.0.12 -U sa -P 'KetNoi@123' -i /init-scripts/03_cn2_setup.sql &&
+        echo '--- Khoi tao CLIENT3 (Chi nhanh TP.HCM - CN3) ---' &&
+        /opt/mssql-tools/bin/sqlcmd -S 172.28.0.13 -U sa -P 'KetNoi@123' -i /init-scripts/04_cn3_setup.sql &&
+        echo '=== HOAN TAT! Tat ca server san sang ===
+        '
+      "
+    restart: "no"
+
+volumes:
+  master_data:
+  cn1_data:
+  cn2_data:
+  cn3_data:
+
+networks:
+  qlns_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.99.0/24

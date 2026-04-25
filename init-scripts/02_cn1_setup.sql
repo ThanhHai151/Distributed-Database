@@ -1,0 +1,312 @@
+-- ============================================================
+--  CLIENT1 — CHI NHANH HA NOI (CN1)
+--  Phan manh ngang: chi chua du lieu cua CHINHANH = 'CN1'
+--  IP: 192.168.99.11  |  Port: 1433 (mapped 1434)
+-- ============================================================
+
+USE master;
+GO
+
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'QuanLyNhanSu')
+BEGIN
+    ALTER DATABASE QuanLyNhanSu SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE QuanLyNhanSu;
+END
+GO
+
+CREATE DATABASE QuanLyNhanSu;
+GO
+
+USE QuanLyNhanSu;
+GO
+
+-- ============================================================
+--  TAO BANG (cung cau truc voi Master)
+-- ============================================================
+
+CREATE TABLE CHINHANH (
+    IDCN CHAR(10) PRIMARY KEY NOT NULL,
+    TENCNHANH NVARCHAR(255) NOT NULL,
+    HOTLINE VARCHAR(20),
+    DIACHI NVARCHAR(255)
+);
+
+CREATE TABLE CHUCVU (
+    IDCV CHAR(10) PRIMARY KEY NOT NULL,
+    TENCV NVARCHAR(255) NOT NULL
+);
+
+CREATE TABLE PHONGBAN (
+    IDPB CHAR(10) PRIMARY KEY NOT NULL,
+    TENPB NVARCHAR(255) NOT NULL,
+    DIACHI NVARCHAR(255),
+    NGAYTHANHLAP DATE
+);
+
+CREATE TABLE TRINHDO (
+    IDTD CHAR(10) PRIMARY KEY NOT NULL,
+    TENTD NVARCHAR(255) NOT NULL,
+    CHUYENNGANH NVARCHAR(255)
+);
+
+CREATE TABLE NHANVIEN (
+    IDNV CHAR(10) PRIMARY KEY NOT NULL,
+    TENNV NVARCHAR(255) NOT NULL,
+    GIOITINH NVARCHAR(10),
+    NGAYSINH DATE,
+    CCCD CHAR(12),
+    EMAIL VARCHAR(255),
+    DIENTHOAI VARCHAR(15),
+    DIACHI NVARCHAR(255),
+    DANTOC NVARCHAR(50),
+    TONGIAO NVARCHAR(50),
+    HONNHAN NVARCHAR(50),
+    TRINHDO CHAR(10) NOT NULL,
+    CHUCVU CHAR(10) NOT NULL,
+    PHONGBAN CHAR(10) NOT NULL,
+    CHINHANH CHAR(10) NOT NULL,
+    FOREIGN KEY (CHINHANH) REFERENCES CHINHANH(IDCN),
+    FOREIGN KEY (CHUCVU) REFERENCES CHUCVU(IDCV),
+    FOREIGN KEY (TRINHDO) REFERENCES TRINHDO(IDTD),
+    FOREIGN KEY (PHONGBAN) REFERENCES PHONGBAN(IDPB)
+);
+
+CREATE TABLE LOAIHD (
+    IDLOAI CHAR(10) PRIMARY KEY NOT NULL,
+    TENLOAI NVARCHAR(255) NOT NULL,
+    THOIHAN INT,
+    BHYT NVARCHAR(11),
+    BHXH NVARCHAR(11),
+    BHTN NVARCHAR(11)
+);
+
+CREATE TABLE HOPDONG (
+    SODH CHAR(10) PRIMARY KEY NOT NULL,
+    NGAYKY DATE,
+    NGAYBATDAU DATE,
+    NGAYKETTHUC DATE,
+    LUONGCOBAN DECIMAL(15, 2),
+    TRANGTHAI VARCHAR(20),
+    IDNV CHAR(10) NOT NULL,
+    LOAIHD CHAR(10) NOT NULL,
+    FOREIGN KEY (IDNV) REFERENCES NHANVIEN(IDNV),
+    FOREIGN KEY (LOAIHD) REFERENCES LOAIHD(IDLOAI)
+);
+
+CREATE TABLE BANGCHAMCONG (
+    IDBC CHAR(10) PRIMARY KEY NOT NULL,
+    IDNV CHAR(10) NOT NULL,
+    THANG TINYINT,
+    NAM SMALLINT,
+    SOGIOTANGCA DECIMAL(5,2),
+    SONGAYNGHI INT,
+    SONGAYDITRE INT,
+    TONGNGAYLAM INT,
+    TRANGTHAI NVARCHAR(50),
+    FOREIGN KEY (IDNV) REFERENCES NHANVIEN(IDNV)
+);
+
+CREATE TABLE LOAICONG (
+    IDLC CHAR(10) PRIMARY KEY NOT NULL,
+    TENLC NVARCHAR(50) NOT NULL,
+    MOTA NVARCHAR(255)
+);
+
+CREATE TABLE CHITIET_BANGCONG (
+    IDCT CHAR(10) PRIMARY KEY NOT NULL,
+    IDBC CHAR(10) NOT NULL,
+    NGAYLAM INT,
+    LOAICONG CHAR(10) NOT NULL,
+    FOREIGN KEY (IDBC) REFERENCES BANGCHAMCONG(IDBC),
+    FOREIGN KEY (LOAICONG) REFERENCES LOAICONG(IDLC)
+);
+
+CREATE TABLE BANGLUONG (
+    IDBL CHAR(10) PRIMARY KEY NOT NULL,
+    IDBC CHAR(10) NOT NULL,
+    LUONGCOBAN DECIMAL(15,2),
+    LUONGTHUCTE DECIMAL(15, 2),
+    THUETNCN DECIMAL(10,2),
+    LUONGTHUONG DECIMAL(15, 2),
+    PHUCAPCHUCVU DECIMAL(15, 2),
+    KHOANTRUBAOHIEM DECIMAL(15,2),
+    PHUCAPKHAC DECIMAL(15, 2),
+    KHOANTRUKHAC DECIMAL(15,2),
+    THUCNHAN DECIMAL(15,2),
+    FOREIGN KEY (IDBC) REFERENCES BANGCHAMCONG(IDBC)
+);
+
+CREATE TABLE TUYENDUNG (
+    MATD CHAR(10) PRIMARY KEY,
+    IDCN CHAR(10),
+    VITRITD NVARCHAR(255),
+    DOTUOI INT,
+    GIOITINH NVARCHAR(10),
+    SOLUONG INT,
+    HANTD DATE,
+    LUONGTOITHIEU DECIMAL(10, 2),
+    LUONGTOIDA DECIMAL(10, 2),
+    SOHOSODANAOP INT,
+    SOHOSODATUYEN INT,
+    TRANGTHAI NVARCHAR(50),
+    FOREIGN KEY (IDCN) REFERENCES CHINHANH(IDCN)
+);
+GO
+
+-- ============================================================
+--  INSERT DU LIEU — CHI CH NHANH CN1 (HA NOI)
+-- ============================================================
+
+-- Lookup tables (day du de tham chieu)
+INSERT INTO CHINHANH VALUES ('CN1', N'Chi nhánh Hà Nội', '0281234567', N'123 Đường Láng, Đống Đa, Hà Nội');
+GO
+
+INSERT INTO CHUCVU (IDCV, TENCV) VALUES
+('CV001', N'Giám đốc'), ('CV002', N'Trưởng phòng'), ('CV003', N'Nhân viên'),
+('CV004', N'Chuyên viên'), ('CV005', N'Thực tập sinh'), ('CV006', N'Quản lý'),
+('CV007', N'Trưởng nhóm'), ('CV008', N'Phó giám đốc'), ('CV009', N'Kế toán trưởng'),
+('CV010', N'Nhân viên hành chính'), ('CV011', N'Nhân viên IT'), ('CV012', N'Nhân viên kinh doanh');
+GO
+
+INSERT INTO TRINHDO (IDTD, TENTD, CHUYENNGANH) VALUES
+('TD001', N'Đại học', N'Công nghệ thông tin'), ('TD002', N'Đại học', N'Quản trị kinh doanh'),
+('TD003', N'Đại học', N'Kế toán'), ('TD004', N'Đại học', N'Marketing'),
+('TD005', N'Cao đẳng', N'Quản trị văn phòng'), ('TD006', N'Cao đẳng', N'Kỹ thuật điện'),
+('TD007', N'Thạc sĩ', N'Khoa học máy tính'), ('TD008', N'Tiến sĩ', N'Kinh tế học'),
+('TD009', N'Cao đẳng', N'Du lịch'), ('TD010', N'Trung cấp', N'Công nghệ thông tin'),
+('TD011', N'Đại học', N'Luật'), ('TD012', N'Đại học', N'Ngôn ngữ Anh');
+GO
+
+-- Phong ban thuoc CN1
+INSERT INTO PHONGBAN VALUES
+('PB_KD1', N'Phòng Kinh doanh 1',  N'Tầng 2, 123 Đường Láng', '2020-01-15'),
+('PB_KT1', N'Phòng Kỹ thuật 1',    N'Tầng 3, 123 Đường Láng', '2020-02-20'),
+('PB_HC1', N'Phòng Hành chính 1',  N'Tầng 1, 123 Đường Láng', '2019-11-01'),
+-- Phan manh can phai co PHONGBAN de nhan vien khac chi nhanh tham chieu
+('PB_MKT2', N'Phòng Marketing 2',  N'Lầu 3, 456 Nguyễn Văn Linh', '2021-05-01'),
+('PB_DA3',  N'Ban Quản lý Dự án 3',N'Lầu 7, 789 Võ Văn Tần',      '2019-01-20'),
+('PB_TC3',  N'Phòng Tài chính 3',  N'Lầu 4, 789 Võ Văn Tần',      '2018-06-01');
+GO
+
+-- Nhan vien thuoc CN1: NV001, NV004, NV008, NV009
+INSERT INTO NHANVIEN (IDNV, TENNV, GIOITINH, NGAYSINH, CCCD, EMAIL, DIENTHOAI, DIACHI, DANTOC, TONGIAO, HONNHAN, TRINHDO, CHUCVU, PHONGBAN, CHINHANH) VALUES
+('NV001', N'Nguyễn Văn A', N'Nam', '1990-05-10', '001123456789', 'anv@example.com', '0901112223', N'123 Đường A, Hà Nội',  N'Kinh', N'Không',           N'Đã kết hôn', 'TD001', 'CV001', 'PB_KD1', 'CN1'),
+('NV004', N'Phạm Thị D',   N'Nữ',  '1995-02-15', '001456789012', 'dtp@example.com', '0909990001', N'101 Đường D, Hà Nội',  N'Kinh', N'Thiên Chúa giáo', N'Độc thân',   'TD004', 'CV004', 'PB_MKT2','CN1'),
+('NV008', N'Lê Thị H',     N'Nữ',  '1989-12-18', '001890123456', 'hlt@example.com', '0919990001', N'505 Đường H, TP.HCM',  N'Kinh', N'Thiên Chúa giáo', N'Đã kết hôn', 'TD004', 'CV003', 'PB_DA3', 'CN1'),
+('NV009', N'Phạm Văn I',   N'Nam', '1994-06-14', '001901234567', 'ipv@example.com', '0931112223', N'606 Đường I, TP.HCM',  N'Chăm', N'Không',           N'Độc thân',   'TD001', 'CV003', 'PB_TC3', 'CN1');
+GO
+
+INSERT INTO LOAIHD VALUES
+('HD001', N'Hợp đồng Không xác định thời hạn', NULL, N'Có', N'Có', N'Có'),
+('HD002', N'Hợp đồng 12 tháng', 12, N'Có', N'Có', N'Có'),
+('HD003', N'Hợp đồng 24 tháng', 24, N'Có', N'Có', N'Có'),
+('HD004', N'Hợp đồng Thử việc',  2, N'Không', N'Không', N'Không');
+GO
+
+INSERT INTO HOPDONG VALUES
+('HDNV001', '2023-01-01', '2023-01-01', NULL,         25000000.00, N'Có hiệu lực', 'NV001', 'HD001'),
+('HDNV004', '2024-01-20', '2024-01-20', '2026-01-19', 16000000.00, N'Có hiệu lực', 'NV004', 'HD003'),
+('HDNV008', '2023-04-05', '2023-04-05', NULL,         19000000.00, N'Có hiệu lực', 'NV008', 'HD001'),
+('HDNV009', '2024-06-01', '2024-06-01', '2026-05-31', 13000000.00, N'Có hiệu lực', 'NV009', 'HD003');
+GO
+
+INSERT INTO BANGCHAMCONG VALUES
+('BCC001', 'NV001', 1, 2024, 10.5, 1, 0, 25, N'Đã duyệt'),
+('BCC004', 'NV004', 1, 2024,  2.5, 3, 2, 23, N'Đã duyệt'),
+('BCC008', 'NV008', 1, 2024,  9.0, 1, 3, 22, N'Đã duyệt'),
+('BCC009', 'NV009', 1, 2024,  7.0, 0, 0, 26, N'Đã duyệt');
+GO
+
+INSERT INTO LOAICONG VALUES
+('DL','Đi làm','Ngày làm việc bình thường'), ('NP','Nghỉ phép','Ngày nghỉ có hưởng lương'),
+('NKL','Nghỉ không lương','Ngày nghỉ không hưởng lương'), ('CT','Công tác','Đi công tác'),
+('TC1','Tăng ca','Tăng ca 1 tiếng'), ('TC2','Tăng ca','Tăng ca 2 tiếng'),
+('TC3','Tăng ca','Tăng ca 3 tiếng'), ('TC4','Tăng ca','Tăng ca 4 tiếng'), ('DT','Đi trễ','Đi làm muộn');
+GO
+
+INSERT INTO CHITIET_BANGCONG VALUES
+('CTCC001','BCC001',1,'DL'), ('CTCC002','BCC001',2,'DL'),
+('CTCC007','BCC004',10,'DL'), ('CTCC008','BCC004',11,'DL');
+GO
+
+INSERT INTO BANGLUONG VALUES
+('BL001','BCC001',25000000.00,25000000.00*(25.0/26.0)+(10.5*(25000000.00/26/8)*1.5),500000.00,1000000.00,3000000.00,2000000.00,500000.00,0.00,(25000000.00*(25.0/26.0)+(10.5*(25000000.00/26/8)*1.5))-500000.00+1000000.00+3000000.00-2000000.00+500000.00),
+('BL004','BCC004',16000000.00,16000000.00*(23.0/26.0)+(2.5*(16000000.00/26/8)*1.5),250000.00,300000.00,1000000.00,1300000.00,100000.00,50000.00,(16000000.00*(23.0/26.0)+(2.5*(16000000.00/26/8)*1.5))-250000.00+300000.00+1000000.00-1300000.00+100000.00-50000.00),
+('BL008','BCC008',19000000.00,19000000.00*(22.0/26.0)+(9.0*(19000000.00/26/8)*1.5),350000.00,700000.00,0.00,1600000.00,350000.00,200000.00,(19000000.00*(22.0/26.0)+(9.0*(19000000.00/26/8)*1.5))-350000.00+700000.00+0.00-1600000.00+350000.00-200000.00),
+('BL009','BCC009',13000000.00,13000000.00*(26.0/26.0)+(7.0*(13000000.00/26/8)*1.5),100000.00,300000.00,0.00,1000000.00,100000.00,0.00,(13000000.00*(26.0/26.0)+(7.0*(13000000.00/26/8)*1.5))-100000.00+300000.00+0.00-1000000.00+100000.00);
+GO
+
+INSERT INTO TUYENDUNG VALUES
+('TD001','CN1',N'Nhân viên Kinh doanh',        22,N'Không',5,'2024-12-31', 8000000.00,15000000.00,15,3,N'Đang tuyển'),
+('TD007','CN1',N'Nhân viên Chăm sóc khách hàng',22,N'Nữ', 4,'2024-12-01', 7000000.00,12000000.00,18,3,N'Đang tuyển'),
+('TD008','CN1',N'Nhân viên Hành chính văn phòng',22,N'Không',2,'2024-10-20',8000000.00,13000000.00,9,1,N'Đang tuyển'),
+('TD010','CN1',N'Thiết kế đồ họa',             23,N'Không',2,'2024-12-25',10000000.00,17000000.00,7,1,N'Đang tuyển');
+GO
+
+-- ============================================================
+--  DU LIEU BO SUNG THANG 2/2024 — CN1
+-- ============================================================
+INSERT INTO BANGCHAMCONG VALUES
+('BCC101','NV001',2,2024, 8.0,0,0,23,N'Đã duyệt'),
+('BCC104','NV004',2,2024, 0.0,2,0,21,N'Đã duyệt'),
+('BCC108','NV008',2,2024,11.0,0,0,23,N'Đã duyệt'),
+('BCC109','NV009',2,2024, 5.0,1,0,22,N'Đã duyệt');
+GO
+
+INSERT INTO CHITIET_BANGCONG VALUES
+('CTCC101','BCC101',1,'DL'),('CTCC102','BCC101',5,'DL'),('CTCC103','BCC101',10,'TC2'),
+('CTCC108','BCC104',12,'NP'),('CTCC109','BCC104',13,'NP'),
+('CTCC117','BCC108',4,'TC4'),('CTCC118','BCC108',18,'DL'),
+('CTCC119','BCC109',11,'DL'),('CTCC120','BCC109',21,'NP');
+GO
+
+INSERT INTO BANGLUONG VALUES
+('BL101','BCC101',25000000.00,25000000.00*(23.0/26.0)+(8.0*(25000000.00/26/8)*1.5),480000.00,0.00,3000000.00,2000000.00,500000.00,0.00,(25000000.00*(23.0/26.0)+(8.0*(25000000.00/26/8)*1.5))-480000.00+0.00+3000000.00-2000000.00+500000.00),
+('BL104','BCC104',16000000.00,16000000.00*(21.0/26.0),200000.00,0.00,1000000.00,1300000.00,100000.00,0.00,(16000000.00*(21.0/26.0))-200000.00+0.00+1000000.00-1300000.00+100000.00),
+('BL108','BCC108',19000000.00,19000000.00*(23.0/26.0)+(11.0*(19000000.00/26/8)*1.5),380000.00,1500000.00,0.00,1600000.00,350000.00,0.00,(19000000.00*(23.0/26.0)+(11.0*(19000000.00/26/8)*1.5))-380000.00+1500000.00+0.00-1600000.00+350000.00),
+('BL109','BCC109',13000000.00,13000000.00*(22.0/26.0)+(5.0*(13000000.00/26/8)*1.5),90000.00,0.00,0.00,1000000.00,100000.00,0.00,(13000000.00*(22.0/26.0)+(5.0*(13000000.00/26/8)*1.5))-90000.00+0.00+0.00-1000000.00+100000.00);
+GO
+
+-- ============================================================
+--  DU LIEU BO SUNG THANG 3/2024 — CN1
+-- ============================================================
+INSERT INTO BANGCHAMCONG VALUES
+('BCC201','NV001',3,2024,15.0,0,0,26,N'Đã duyệt'),
+('BCC204','NV004',3,2024, 3.5,2,0,24,N'Đã duyệt'),
+('BCC208','NV008',3,2024,10.0,0,1,25,N'Đã duyệt'),
+('BCC209','NV009',3,2024, 7.5,1,0,25,N'Đã duyệt');
+GO
+
+INSERT INTO BANGLUONG VALUES
+('BL201','BCC201',25000000.00,25000000.00*(26.0/26.0)+(15.0*(25000000.00/26/8)*1.5),550000.00,2000000.00,3000000.00,2000000.00,500000.00,0.00,(25000000.00*(26.0/26.0)+(15.0*(25000000.00/26/8)*1.5))-550000.00+2000000.00+3000000.00-2000000.00+500000.00),
+('BL204','BCC204',16000000.00,16000000.00*(24.0/26.0)+(3.5*(16000000.00/26/8)*1.5),245000.00,500000.00,1000000.00,1300000.00,100000.00,0.00,(16000000.00*(24.0/26.0)+(3.5*(16000000.00/26/8)*1.5))-245000.00+500000.00+1000000.00-1300000.00+100000.00),
+('BL208','BCC208',19000000.00,19000000.00*(25.0/26.0)+(10.0*(19000000.00/26/8)*1.5),360000.00,1000000.00,0.00,1600000.00,350000.00,0.00,(19000000.00*(25.0/26.0)+(10.0*(19000000.00/26/8)*1.5))-360000.00+1000000.00+0.00-1600000.00+350000.00),
+('BL209','BCC209',13000000.00,13000000.00*(25.0/26.0)+(7.5*(13000000.00/26/8)*1.5),110000.00,400000.00,0.00,1000000.00,100000.00,0.00,(13000000.00*(25.0/26.0)+(7.5*(13000000.00/26/8)*1.5))-110000.00+400000.00+0.00-1000000.00+100000.00);
+GO
+
+-- Tao user ket noi
+USE master;
+GO
+CREATE LOGIN ket_noi WITH PASSWORD = 'KetNoi@123', CHECK_POLICY = OFF;
+GO
+USE QuanLyNhanSu;
+GO
+CREATE USER ket_noi FOR LOGIN ket_noi;
+ALTER ROLE db_owner ADD MEMBER ket_noi;
+GO
+
+-- Linked Server tro ve MASTER
+USE master;
+GO
+IF EXISTS (SELECT name FROM sys.servers WHERE name = 'QLNS_MASTER')
+    EXEC sp_dropserver 'QLNS_MASTER', 'droplogins';
+GO
+EXEC sp_addlinkedserver
+    @server='QLNS_MASTER', @srvproduct='', @provider='MSOLEDBSQL', @datasrc='192.168.99.10,1433';
+GO
+EXEC sp_addlinkedsrvlogin
+    @rmtsrvname='QLNS_MASTER', @useself='FALSE', @rmtuser='sa', @rmtpassword='KetNoi@123';
+GO
+
+PRINT N'=== CLIENT1 (CN1 - Ha Noi) da khoi tao xong! ===';
+GO

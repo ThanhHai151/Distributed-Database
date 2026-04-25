@@ -1,0 +1,73 @@
+version: '3.8'
+
+# ============================================================
+#  QLNS Web App — chạy cùng với 4 SQL Server nodes
+#  Dùng: docker-compose -f docker-compose.yml -f docker-compose.app.yml up
+# ============================================================
+
+services:
+  # ─────────────────────────────────────────────
+  #  Backend API — Fastify TypeScript
+  # ─────────────────────────────────────────────
+  qlns-backend:
+    build:
+      context: ./qlns-web/backend
+      dockerfile: Dockerfile
+    container_name: qlns_backend
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      HOST: 0.0.0.0
+      QUERY_MODE: direct
+      # Connect to SQL Server containers by internal IPs
+      MASTER_HOST: 192.168.99.10
+      MASTER_PORT: 1433
+      MASTER_USER: sa
+      MASTER_PASSWORD: KetNoi@123
+      MASTER_DB: QuanLyNhanSu
+      CN1_HOST: 192.168.99.11
+      CN1_PORT: 1433
+      CN1_USER: sa
+      CN1_PASSWORD: KetNoi@123
+      CN1_DB: QuanLyNhanSu
+      CN2_HOST: 192.168.99.12
+      CN2_PORT: 1433
+      CN2_USER: sa
+      CN2_PASSWORD: KetNoi@123
+      CN2_DB: QuanLyNhanSu
+      CN3_HOST: 192.168.99.13
+      CN3_PORT: 1433
+      CN3_USER: sa
+      CN3_PASSWORD: KetNoi@123
+      CN3_DB: QuanLyNhanSu
+      DB_POOL_MAX: 10
+      DB_POOL_MIN: 2
+    networks:
+      qlns_net:
+        ipv4_address: 192.168.99.20
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  #  Frontend — Next.js
+  # ─────────────────────────────────────────────
+  qlns-frontend:
+    build:
+      context: ./qlns-web/frontend
+      dockerfile: Dockerfile
+    container_name: qlns_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://qlns-backend:4000
+    depends_on:
+      - qlns-backend
+    networks:
+      - qlns_net
+    restart: unless-stopped
+
+networks:
+  qlns_net:
+    external: true
+    name: csdlpt_qlns_net
